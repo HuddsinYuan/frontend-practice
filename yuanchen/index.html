@@ -1,0 +1,231 @@
+<html>
+
+<head>
+    <title>My Todo List</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <!-- <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"> -->
+</head>
+
+<body>
+    <div id="myDIV" class="header">
+        <h2>My Todo List</h2>
+        <input type="text" id="myInput" placeholder="请输入待办事项">
+        <span onclick="newElement()" class="addBtn">Add</span>
+    </div>
+    <ul id="list"></ul>
+
+    <footer>
+    <div>
+    	<button onclick="savetolocal()" class="footBtn">Save to Local</button>
+    	<button onclick="loadfromlocal()" class="footBtn">Load from Local</button>
+    </div>
+    </footer>
+</body>
+
+<script src="./jquery-3.2.1.min.js"></script>
+
+
+<script>
+
+// get the task type
+// if textDecoration is 'none', it means this task is not finished.
+// if textDecoration is 'line-through', it means this task has been finished.
+
+function savetolocal()
+{
+	var curtime = new Date().getTime();
+	console.log(curtime);
+
+	var existingNodes = document.getElementsByTagName("LI");
+	if (existingNodes.length == 0) {
+		alert("There is no tasks.");
+	} else {
+		var i;
+		var status;
+		var taskname;
+		for (i = 0; i < existingNodes.length; i++) {
+
+    		console.log("The " + i + " task is " + existingNodes[i].firstChild.innerHTML);
+    		taskname = existingNodes[i].firstChild.innerHTML;
+    		if (window.getComputedStyle(existingNodes[i]).textDecoration[0] == 'n' ) {
+    			console.log("wait for finishing");
+    			status = 0;
+    		} else {
+    			console.log("has finished");
+    			status = 1;
+    		}
+    		setKeypair(i, taskname, curtime, status);
+		}
+
+	}
+}
+
+// reload the first 10 tasks.
+// fail to run
+function loadfromlocal()
+{
+	var j ;
+	for (j = 0; j < localStorage.length; j= j+1) {
+
+		console.log("Loading the " + j + " task...");
+		var taskdata = getKeypair(j);
+		var jsondata = JSON.parse(taskdata);
+		console.log(jsondata.task);
+
+		var li = document.createElement("li");
+    	// get the task name
+    	var inputValue = jsondata.task;
+
+    	// create the text node ( task ) and show
+    	var taskpara = document.createElement("SPAN");
+    	var txt = document.createTextNode(inputValue);
+    	taskpara.className = "task";
+    	taskpara.appendChild(txt);
+
+    	li.appendChild(taskpara);
+
+
+        document.getElementById("list").appendChild(li);
+    	// set the delete button
+    	var closespan = document.createElement("SPAN");
+    	var txt = document.createTextNode("\u00D7");
+    	closespan.className = "close";
+    	closespan.appendChild(txt);
+    	li.appendChild(closespan);
+
+    	var editspan = document.createElement("SPAN");
+    	var txt = document.createTextNode("\u270e");
+    	editspan.className = "edit";
+    	editspan.appendChild(txt);
+    	li.appendChild(editspan);
+
+    	for (i = 0; i < close.length; i++) {
+        	close[i].onclick = function() {
+            	var div = this.parentElement;
+            	div.style.display = "none";
+        	}
+    	}
+    	for (i = 0; i < edit.length; i++) {
+        	edit[i].onclick = function(e) {
+        		var origintask = this.parentElement.firstChild;
+        		var edittask = prompt('Change your task:' , origintask.innerHTML);
+        		console.log("origintask: " + origintask.innerHTML);
+        		console.log("aftertask: " + edittask);
+        		if(edittask != origintask.innerHTML){
+        			origintask.innerHTML = edittask;
+        		}
+        	}
+    	}
+	}
+}
+
+function setKeypair(key, value, curtime, workstate) {
+	localStorage.setItem(key, JSON.stringify({task: value,time: curtime,state: workstate}))
+}
+
+function getKeypair(key) {
+	var jsondata = localStorage.getItem(key);
+	var taskdata = JSON.parse(jsondata);
+	return jsondata;
+}
+
+var myNodelist = document.getElementsByTagName("LI");
+var i;
+for (i = 0; i < myNodelist.length; i++) {
+    var span = document.createElement("SPAN");
+    var txt = document.createTextNode("\u00D7");
+    span.className = "close";
+    span.appendChild(txt);
+    myNodelist[i].appendChild(span);
+}
+
+var close = document.getElementsByClassName("close");
+var i;
+for (i = 0; i < close.length; i++) {
+    close[i].onclick = function() {
+        var div = this.parentElement;
+        div.style.display = "none";
+    }
+}
+
+var edit  = document.getElementsByClassName("edit");
+var i;
+for (i = 0; i<edit.length; i++) {
+	edit[i].onclick = function(e){
+		    var origintask = this.parentElement.firstChild;
+        	var edittask = prompt('Change your task:' , origintask.innerHTML);
+        	console.log("origintask: " + origintask.innerHTML);
+        	console.log("aftertask: " + edittask);
+        	if(edittask != origintask.innerHTML){
+        		origintask.innerHTML = edittask;
+        	}
+	}
+}
+
+// Add a "checked" symbol when clicking on a list item
+var list = document.querySelector('ul');
+list.addEventListener('click', function(e) {
+    if (e.target.tagName === 'LI') {
+    	e.target.classList.toggle('checked');
+    }
+}, false);
+
+// Create a new list item when clicking on the "Add" button
+function newElement() {
+	// indicate a new task
+    var li = document.createElement("li");
+    // get the task name
+    var inputValue = document.getElementById("myInput").value;
+
+    // create the text node ( task ) and show
+    var taskpara = document.createElement("SPAN");
+    var txt = document.createTextNode(inputValue);
+    taskpara.className = "task";
+    taskpara.appendChild(txt);
+
+    li.appendChild(taskpara);
+    if (inputValue === '') {
+        alert("You must write something!");
+    } else {
+        document.getElementById("list").appendChild(li);
+    }
+    // clean the input
+    document.getElementById("myInput").value = "";
+
+    // set the delete button
+    var closespan = document.createElement("SPAN");
+    var txt = document.createTextNode("\u00D7");
+    closespan.className = "close";
+    closespan.appendChild(txt);
+    li.appendChild(closespan);
+
+    var editspan = document.createElement("SPAN");
+    var txt = document.createTextNode("\u270e");
+    editspan.className = "edit";
+    editspan.appendChild(txt);
+    li.appendChild(editspan);
+
+    for (i = 0; i < close.length; i++) {
+        close[i].onclick = function() {
+            var div = this.parentElement;
+            div.style.display = "none";
+        }
+    }
+    for (i = 0; i < edit.length; i++) {
+        edit[i].onclick = function(e) {
+        	var origintask = this.parentElement.firstChild;
+        	var edittask = prompt('Change your task:' , origintask.innerHTML);
+        	console.log("origintask: " + origintask.innerHTML);
+        	console.log("aftertask: " + edittask);
+        	if(edittask != origintask.innerHTML){
+        		origintask.innerHTML = edittask;
+        	}
+
+
+        }
+    }
+
+}
+</script>
+
+</html>
